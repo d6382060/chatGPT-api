@@ -40,7 +40,6 @@ export const parseOpenAIStream = (reader:ReadableStreamDefaultReader<Uint8Array>
               controller.close()
               return
             }
-            console.log(data,'data');
             
             try {
               // response = {

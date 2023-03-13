@@ -2,8 +2,8 @@
 <MessageItem v-for="item in MessageList" :role="item.role" :message="item.content"/>
 
 <div>
-<textarea v-model.trim="textValue" placeholder="问题" name="" id="" cols="30" rows="10"></textarea>
- <button @click="sendMessage">send</button>
+<textarea ref="textInputRef" @keydown.enter="sendMessage" v-model.trim="textValue" placeholder="问题"  cols="30" rows="10"></textarea>
+ <button  @click="sendMessage">send</button>
 </div>
 
 </template>
@@ -13,11 +13,15 @@ import { generatePayload, parseOpenAIStream } from '@/utils/openAI'
 import { verifySignature } from '@/utils/auth'
 
 
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
 import { generateSignature } from '@/utils/auth'
 import MessageItem from './MessageItem.vue';
 
 
+const aaa = ()=>{
+  console.log('aaa');
+  
+}
 
 // openAI的key
 const apiKey = import.meta.env.VITE_OPENAI_API_KEY
@@ -68,6 +72,8 @@ const textValue = ref<string>('')
 
 const MessageList =<any>ref([])
 
+let textInputRef = ref<HTMLInputElement>()
+  
 const sendMessage = ()=>{
   if(!textValue.value) return
   let message  = textValue.value
@@ -90,7 +96,7 @@ requestWithLatestMessage()
 
 let getController = ref<AbortController>()
 
-let currentAssistantMessage = ref('')
+
 const requestWithLatestMessage =async ()=>{
  
 
@@ -136,29 +142,32 @@ const requestWithLatestMessage =async ()=>{
 
        
       let done = false
+      let currentAssistantMessage = reactive<any>({
+      role:'assistant',
+        content:''
+      })
+
+      MessageList.value = [
+        ...MessageList.value, 
+        currentAssistantMessage
+    ]
+    textInputRef.value?.blur()
       while(!done){
         const {value, done: readerDone} = await reader.read()
         if(value){
           let char = decoder.decode(value)
-          console.log(char,'char');
+
           if (char === '\n') {
             continue
           }
           if(char){
-            currentAssistantMessage.value+=char
+            currentAssistantMessage.content+=char
           }
       
         }
         done = readerDone
       }
 
-      MessageList.value = [
-        ...MessageList.value, 
-        {
-        role:'assistant',
-        content:currentAssistantMessage.value
-        }
-    ]
       
   
  } catch (error) {
