@@ -18,10 +18,8 @@ import { generateSignature } from '@/utils/auth'
 import MessageItem from './MessageItem.vue';
 
 
-const aaa = ()=>{
-  console.log('aaa');
-  
-}
+
+const emit = defineEmits(['sendMessage'])
 
 // openAI的key
 const apiKey = import.meta.env.VITE_OPENAI_API_KEY
@@ -103,7 +101,7 @@ const requestWithLatestMessage =async ()=>{
  try {
 
    // 创建一个取消请求的控制器
-   const controller = new AbortController();
+  const controller = new AbortController();
   getController.value = controller
   const requestMessageList = [...MessageList.value]
 
@@ -168,7 +166,7 @@ const requestWithLatestMessage =async ()=>{
         done = readerDone
       }
 
-      
+      emit('sendMessage',MessageList.value)
   
  } catch (error) {
   
